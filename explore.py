@@ -47,7 +47,7 @@ print(features.head(10))
 
 from sklearn.ensemble import IsolationForest
 
-modell = IsolationForest(contamination=0.05, random_state=42)
+modell = IsolationForest(contamination=0.01, random_state=42)
 modell.fit(features)
 
 features["anomali"] = modell.predict(features)
