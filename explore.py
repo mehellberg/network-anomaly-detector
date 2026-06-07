@@ -1,54 +1,50 @@
 from scapy.all import *
 import pandas as pd
-
-paket = rdpcap("C:/Users/melvi/Documents/VSC/Projekt/network-anomaly-detector/capture.pcapng")
-
-rader = []
-
-for p in paket:
-    if p.haslayer("IP"):
-        if p.haslayer("TCP"):
-            protokoll = "TCP"
-        elif p.haslayer("UDP"):
-            protokoll = "UDP"
-        else:
-            protokoll = "Annat"
-        rad = {
-            "tid": float(p.time),
-            "src_ip": p["IP"].src,
-            "dst_ip": p["IP"].dst,
-            "storlek": len(p),
-            "protokoll": protokoll
-        }
-        rader.append(rad)
-
-df = pd.DataFrame(rader)
-df["tid"] = pd.to_datetime(df["tid"].astype(float), unit="s")
-
-print(df.head(10))
-print(df["protokoll"].value_counts())
-print(df["dst_ip"].value_counts().head(5))
-
-df = df.set_index("tid")
-paket_per_sekund = df.resample("1s").size()
-print(paket_per_sekund.head(10))
-
-features = pd.DataFrame ({
-    "paket_per_sek": df.resample("1s").size(),
-    "snitt_storlek": df["storlek"].resample("1s").mean()
-})
-
-udp_per_sek = df[df["protokoll"] == "UDP"].resample("1s").size()
-features["andel_udp"] = udp_per_sek / features["paket_per_sek"]
-
-features = features.fillna(0)
-print(features.head(10))
-
-
 from sklearn.ensemble import IsolationForest
 
-modell = IsolationForest(contamination=0.01, random_state=42)
-modell.fit(features)
+# Read network traffic from PCAP-file
+packets = rdpcap("C:/Users/melvi/Documents/VSC/Projekt/network-anomaly-detector/capture.pcapng")
 
-features["anomali"] = modell.predict(features)
-print(features[features["anomali"] == -1])
+# Extract relevant fields from each packet
+rows = []
+for p in packets:
+    if p.haslayer("IP"):
+        if p.haslayer("TCP"):
+            protocol = "TCP"
+        elif p.haslayer("UDP"):
+            protocol = "UDP"
+        else:
+            protocol = "Other"
+        row = {
+            "time": float(p.time),
+            "src_ip": p["IP"].src,
+            "dst_ip": p["IP"].dst,
+            "size": len(p),
+            "protocol": protocol
+        }
+        rows.append(row)
+
+# Build pandas DataFrame and set time as index
+df = pd.DataFrame(rows)
+df["time"] = pd.to_datetime(df["time"].astype(float), unit="s")
+df = df.set_index("time")
+
+# Aggregate features per second
+features = pd.DataFrame ({
+    "packets_per_sec": df.resample("1s").size(),
+    "mean_size": df["size"].resample("1s").mean()
+})
+
+# Calculate amount of UDP-trafic per second
+udp_per_sec = df[df["protocol"] == "UDP"].resample("1s").size()
+features["udp_ratio"] = udp_per_sec / features["packets_per_sec"]
+features = features.fillna(0)
+
+
+# Train Isolation Forest and flag anomalies
+
+model = IsolationForest(contamination=0.01, random_state=42)
+model.fit(features)
+
+features["anomaly"] = model.predict(features)
+print(features[features["anomaly"] == -1])
