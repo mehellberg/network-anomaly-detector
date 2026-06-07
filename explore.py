@@ -42,7 +42,6 @@ features = features.fillna(0)
 
 
 # Train Isolation Forest and flag anomalies
-
 model = IsolationForest(contamination=0.01, random_state=42)
 model.fit(features)
 
