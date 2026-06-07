@@ -33,9 +33,22 @@ df = df.set_index("tid")
 paket_per_sekund = df.resample("1s").size()
 print(paket_per_sekund.head(10))
 
-features = pd.DataFrame({
+features = pd.DataFrame ({
     "paket_per_sek": df.resample("1s").size(),
     "snitt_storlek": df["storlek"].resample("1s").mean()
 })
 
+udp_per_sek = df[df["protokoll"] == "UDP"].resample("1s").size()
+features["andel_udp"] = udp_per_sek / features["paket_per_sek"]
+
+features = features.fillna(0)
 print(features.head(10))
+
+
+from sklearn.ensemble import IsolationForest
+
+modell = IsolationForest(contamination=0.05, random_state=42)
+modell.fit(features)
+
+features["anomali"] = modell.predict(features)
+print(features[features["anomali"] == -1])
