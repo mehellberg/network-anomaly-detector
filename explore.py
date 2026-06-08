@@ -2,6 +2,7 @@ from scapy.all import *
 import pandas as pd
 from sklearn.ensemble import IsolationForest
 import glob
+import matplotlib.pyplot as plt
 
 # Read network traffic from PCAP-file
 files = [file for file in glob.glob("C:/Users/melvi/Documents/VSC/Projekt/network-anomaly-detector/*.pcapng")]
@@ -52,4 +53,19 @@ model.fit(features)
 features["anomaly"] = model.predict(features)
 # print(features[features["anomaly"] == -1])
 
-print(len(features))
+
+plt.figure(figsize=(14, 5))
+
+# Plot all normal traffic
+normal = features[features["anomaly"] == 1]
+plt.plot(features.index, features["packets_per_sec"], color="blue", label="Normal", linewidth=0.5)
+
+# Highlight anomalies in red
+anomalies = features[features["anomaly"] == -1]
+plt.scatter(anomalies.index, anomalies["packets_per_sec"], color="red", label="Anomaly", s=10)
+
+plt.title("Network Traffic Anomaly Detection")
+plt.xlabel("Time")
+plt.ylabel("Packets per second")
+plt.legend()
+plt.show()
