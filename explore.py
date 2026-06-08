@@ -54,18 +54,21 @@ features["anomaly"] = model.predict(features)
 # print(features[features["anomaly"] == -1])
 
 
-plt.figure(figsize=(14, 5))
+fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(14, 8))
 
-# Plot all normal traffic
-normal = features[features["anomaly"] == 1]
-plt.plot(features.index, features["packets_per_sec"], color="blue", label="Normal", linewidth=0.5)
+# June 6
+day1 = active["2026-06-06"]
+anom1 = day1[day1["anomaly"] == -1]
+ax1.plot(day1.index, day1["packets_per_sec"], color="blue", linewidth=0.5)
+ax1.scatter(anom1.index, anom1["packets_per_sec"], color="red", s=10)
+ax1.set_title("June 6")
 
-# Highlight anomalies in red
-anomalies = features[features["anomaly"] == -1]
-plt.scatter(anomalies.index, anomalies["packets_per_sec"], color="red", label="Anomaly", s=10)
+# June 7
+day2 = active["2026-06-07"]
+anom2 = day2[day2["anomaly"] == -1]
+ax2.plot(day2.index, day2["packets_per_sec"], color="blue", linewidth=0.5)
+ax2.scatter(anom2.index, anom2["packets_per_sec"], color="red", s=10)
+ax2.set_title("June 7")
 
-plt.title("Network Traffic Anomaly Detection")
-plt.xlabel("Time")
-plt.ylabel("Packets per second")
-plt.legend()
+plt.tight_layout()
 plt.show()
