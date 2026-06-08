@@ -47,24 +47,24 @@ features = features.fillna(0)
 
 
 # Train Isolation Forest and flag anomalies
-model = IsolationForest(contamination=0.01, random_state=42)
+model = IsolationForest(contamination=0.005, random_state=42)
 model.fit(features)
 
 features["anomaly"] = model.predict(features)
 # print(features[features["anomaly"] == -1])
 
-
+active = features[features["packets_per_sec"] > 0]
 fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(14, 8))
 
 # June 6
-day1 = active["2026-06-06"]
+day1 = active.loc["2026-06-06"]
 anom1 = day1[day1["anomaly"] == -1]
 ax1.plot(day1.index, day1["packets_per_sec"], color="blue", linewidth=0.5)
 ax1.scatter(anom1.index, anom1["packets_per_sec"], color="red", s=10)
 ax1.set_title("June 6")
 
 # June 7
-day2 = active["2026-06-07"]
+day2 = active.loc["2026-06-07"]
 anom2 = day2[day2["anomaly"] == -1]
 ax2.plot(day2.index, day2["packets_per_sec"], color="blue", linewidth=0.5)
 ax2.scatter(anom2.index, anom2["packets_per_sec"], color="red", s=10)
