@@ -13,3 +13,4 @@ I made it because I wanted to combine machine learning with network security —
 The program reads a pcap file made with wireshark through scapy. It then resamples the data with Pandas to find features that later can be used for training the model to find anomalies through Scikit-learn (Isolation Forest).
 
 ## Results so far
+![Anomaly Detection Graph](anomalygraph.png)
