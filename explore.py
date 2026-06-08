@@ -1,10 +1,14 @@
 from scapy.all import *
 import pandas as pd
 from sklearn.ensemble import IsolationForest
+import glob
 
 # Read network traffic from PCAP-file
-packets = rdpcap("C:/Users/melvi/Documents/VSC/Projekt/network-anomaly-detector/capture.pcapng")
-
+files = [file for file in glob.glob("C:/Users/melvi/Documents/VSC/Projekt/network-anomaly-detector/*.pcapng")]
+packets = [] 
+for file in files:
+    packets += rdpcap(file)
+    
 # Extract relevant fields from each packet
 rows = []
 for p in packets:
@@ -46,4 +50,6 @@ model = IsolationForest(contamination=0.01, random_state=42)
 model.fit(features)
 
 features["anomaly"] = model.predict(features)
-print(features[features["anomaly"] == -1])
+# print(features[features["anomaly"] == -1])
+
+print(len(features))
